@@ -17,13 +17,12 @@ uv_pipe_t stdout_pipe;
 uv_pipe_t file_pipe;
 
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
-    *buf = uv_buf_init((char*) malloc(suggested_size), suggested_size);
+    *buf = uv_buf_init(malloc(suggested_size), suggested_size);
 }
 
 void free_write_req(uv_write_t *req) {
-    write_req_t *wr = (write_req_t*) req;
-    free(wr->buf.base);
-    free(wr);
+    free(((write_req_t*) req)->buf.base);
+    free(req);
 }
 
 void on_stdout_write(uv_write_t *req, int status) {
@@ -35,8 +34,8 @@ void on_file_write(uv_write_t *req, int status) {
 }
 
 void write_data(uv_stream_t *dest, size_t size, uv_buf_t buf, uv_write_cb cb) {
-    write_req_t *req = (write_req_t*) malloc(sizeof(write_req_t));
-    req->buf = uv_buf_init((char*) malloc(size), size);
+    write_req_t *req =  malloc(sizeof(write_req_t));
+    req->buf = uv_buf_init(malloc(size), size);
     memcpy(req->buf.base, buf.base, size);
     uv_write((uv_write_t*) req, (uv_stream_t*)dest, &req->buf, 1, cb);
 }
